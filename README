@@ -1,0 +1,48 @@
+#################################################
+#                                               #
+# README                                        #
+#                                               #
+#   A simple command-line Todo List Manager     #
+#                                               #
+#   Dependancies:                               #
+#       MongoDB (Developed on Version 1.8.2)    #
+#       Python  (Developed on Version 2.7.2)    #
+#       PyMongo (Developed on Version 1.11)     #
+#                                               #
+# Developed by:                                 #
+#   Manuel Zubieta                              #
+#   mazubieta@gmail.com                         #
+#   mzubieta@uno.edu                            #
+#   github.com/mazubieta                        #
+#                                               #
+# Developed for:                                #
+#   Dr. Jaime Nino                              #
+#   CSCI 4210 Software Engineering              #
+#   Fall 2011 @ University of New Orleans       #
+#                                               #
+#################################################
+
+Installation -
+
+    Please download and install the following dependancies:
+        - The latest MongoDB from http://mongodb.org
+        - The latest PyMongo from http://pypi.python.org
+
+    In the terminal, navigate to the directory where 'todo' resides.
+
+    Make 'todo' executable by executing, in the terminal:
+
+        $ chmod +x todo
+
+    You can now execute the following, when your current working directory is
+    the same as 'todo':
+
+        $ python todo help
+
+    If you want to be able to execute the program from anywhere (you should
+    want this), add the following line to your .profile, .bash_rc or .zshrc
+    file (depending on your operating system and shell):
+
+    alias todo='/the/path/to/your/todo/file/todo'
+
+    Make sure to reopen your terminal for the alias to take affect.

@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+#################################################
+#                                               #
+# todo.py                                       #
+#                                               #
+#   A simple command-line Todo List Manager     #
+#                                               #
+#   Dependancies:                               #
+#       MongoDB (Developed on Version 1.8.2)    #
+#       Python  (Developed on Version 2.7.2)    #
+#       PyMongo (Developed on Version 1.11)     #
+#                                               #
+# Developed by:                                 #
+#   Manuel Zubieta                              #
+#   mazubieta@gmail.com                         #
+#   mzubieta@uno.edu                            #
+#   github.com/mazubieta                        #
+#                                               #
+# Developed for:                                #
+#   Dr. Jaime Nino                              #
+#   CSCI 4210 Software Engineering              #
+#   Fall 2011 @ University of New Orleans       #
+#                                               #
+#################################################
+
+import sys, constants
+from task_commands import commands
+
+#######################################
+#   Functions for Parsing Arguments   #
+#######################################
+
+def no_command ( ):
+    """
+If no command is provided, execute 'recent' command.  This is a
+shortcut for convience.
+
+This allows for the user to just type in the terminal:
+
+    $ todo
+
+To receive a list of the most recently created unfished tasks.
+"""
+
+    function = commands['recent']
+    function()
+
+def exec_command ( _command, _args ):
+    """
+Given the command, execute the proper function with the remainder of the
+arguments passed to the function.
+"""
+
+    function = commands[_command]
+    function(_args)
+
+def unknown_command ( _command ):
+    """
+A command that is not recognized was received.  Gracefully exit, while
+notifying the user of this mistake.
+"""
+
+    print """%s is an unrecognized command.  Please execute 'todo help' for
+    further help.""" % _command
+    sys.exit(constants.UNRECOGNIZED_COMMAND)
+
+def read_command ( ):
+    """
+Read the arguments used to execute this script.  Exceute script according to
+how this script was executed in the terminal.
+"""
+
+    args = sys.argv
+    arg_len = len(args)
+
+    if arg_len < 2:
+        no_command()
+    else:
+        command = args[1]
+        if command in commands:
+            args = args[2:]
+            exec_command(command, args)
+        else:
+            unknown_command(command)
+
+#############################
+#       Main Execution      #
+#############################
+
+if __name__ == "__main__":
+    read_command()
