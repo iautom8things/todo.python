@@ -142,9 +142,9 @@ def grab_priority ( _args ):
         try:
             priority = int(_args[p_index + 1])
         except:
-            priority = constants.DEFAULT_PRIOTY
+            priority = constants.DEFAULT_PRIORITY
     else:
-        priority = constants.DEFAULT_PRIOTY
+        priority = constants.DEFAULT_PRIORITY
     return priority
 
 
