@@ -34,8 +34,8 @@ Installation -
 
         $ chmod +x todo
 
-    You can now execute the following, when your current working directory is
-    the same as 'todo':
+    You can now execute the following, when your current working directory 
+    is the same as 'todo':
 
         $ python todo help
 

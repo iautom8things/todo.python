@@ -65,17 +65,17 @@ pflag = "-p"            # Priority
 #########################
 
 def get_globalcount ( _collection ):
-        """Returns the total number of created tasks.  This is used as a unique
-        identifier for tasks."""
+        """Returns the total number of created tasks.  This is used as a
+        unique identifier for tasks."""
 
-        doc = _collection.find({ 'global_count' : { '$exists' : True }}).next()
+        doc = _collection.find({'global_count':{'$exists':True}}).next()
         return int(doc['global_count'])
 
 
 def retrieve_collection ( ):
-    """Create a connection to the MongoDB server, if it is already running, OR
-    if it is not running start our own MongoDB server in a subprocess.  Then
-    return the collection of tasks (this is equvilent to a relational
+    """Create a connection to the MongoDB server, if it is already running,
+    OR if it is not running start our own MongoDB server in a subprocess.
+    Then return the collection of tasks (this is equvilent to a relational
     database's table)."""
 
     global created, mongo_proc, db_connection
@@ -91,7 +91,7 @@ def retrieve_collection ( ):
         try:
             c = pymongo.Connection()
         except:
-            print 'Unable to connect-to and start MongoDB.' 
+            print 'Unable to connect-to and start MongoDB.'
             print 'Are you sure Mongo is installed?'
             sys.exit(constants.SERVER_UNAVAILABLE)
     db_connection = c
@@ -105,12 +105,12 @@ def retrieve_collection ( ):
 def destroy_connection ( ):
     """Kills the subprocess that runs the MongoDB server."""
 
-    global mongo_proc 
+    global mongo_proc
     os.kill(mongo_proc.pid, signal.SIGINT)
 
 def cleanup ( ):
-    """A function to cleanup the MongoDB server subprocess, if it was created
-    by the script."""
+    """A function to cleanup the MongoDB server subprocess, if it was
+    created by the script."""
 
     if created:
         destroy_connection()
@@ -134,8 +134,8 @@ def grab_keywords ( _args ):
     return keywords
 
 def grab_priority ( _args ):
-    """Helper function to look for a priority level, if the priority flag '-p'
-    is included by the user."""
+    """Helper function to look for a priority level, if the priority flag
+    '-p' is included by the user."""
 
     if pflag in _args:
         p_index = _args.index(pflag)
@@ -164,7 +164,7 @@ Function:
 Description:
 
     Creates a new task with the supplied description.
-    And if supplied: 
+    And if supplied:
         - The priority level    # Default Value: 0  (lowest priority)
         - Keywords              # Default Value: [] (empty list)
 
@@ -174,8 +174,8 @@ Flags:
         # be a keyword.  You can have multiple word keywords by surrounding
         # them with quotation marks.
 
-    -p  # A number that directly follows this flag will be the priority level
-        # of the task.
+    -p  # A number that directly follows this flag will be the priority
+        # level of the task.
 
 Examples:
 
@@ -212,7 +212,8 @@ Examples:
         task_id = get_globalcount(tasks) + 1
         task = Task(task_id, description, priority, keywords)
         tasks.insert(task.__dict__)
-        tasks.update({'global_count':{'$exists':True}},{'global_count':task_id})
+        tasks.update({'global_count':{'$exists':True}},
+                {'global_count':task_id})
         print 'Added:'
         print task
     cleanup()
@@ -227,8 +228,8 @@ Function:
 
 Description:
 
-    Deletes the task associated with the given Task ID from the database, with
-    NO WAY of recovering it.
+    Deletes the task associated with the given Task ID from the database,
+    with NO WAY of recovering it.
 
 Examples:
 
@@ -252,7 +253,8 @@ Examples:
         print 'Deleting...\n%s' % task
         tasks.remove({ '_id' : taskid })
     except ValueError:
-        print "Failed.  'delete' command requires an integer-based task ID."
+        print "Failed."
+        print "'delete' command requires an integer-based task ID."
         print "Please execute 'todo help' for further assistance."
     finally:
         cleanup()
@@ -286,11 +288,12 @@ Examples:
     try:
         taskid = int(_args[0])
         tasks = retrieve_collection()
-        tasks.update({ '_id' : taskid }, { '$set' : { '_completed' : True }})
+        tasks.update({'_id':taskid},{'$set':{'_completed':True}})
         task = Task(**tasks.find({'_id' : taskid }).next())
         print 'Completing...\n%s' % task
     except:
-        print "Failed.  'complete' command requires an integer-based task ID."
+        print "Failed."
+        print"'complete' command requires an integer-based task ID."
         print "Please execute 'todo help' for further assistance."
     finally:
         cleanup()
@@ -305,8 +308,8 @@ Function:
 
 Description:
 
-    Displays a list of completed tasks, sorted in descending order with the most
-    recently completed task first.
+    Displays a list of completed tasks, sorted in descending order with
+    the most recently completed task first.
 
 Examples:
 
@@ -336,8 +339,8 @@ Function:
 
 Description:
 
-    Provided a list of keywords, return any tasks that share at least one of the
-    supplied keywords.
+    Provided a list of keywords, return any tasks that share at least one
+    of the supplied keywords.
 
 Examples:
 
@@ -412,8 +415,8 @@ Examples:
         print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
         help' to help get started!"""
     else:
-        recent = tasks.find({'global_count':{'$exists':False},'_completed':False
-            }).sort('_id' , pymongo.DESCENDING).limit(10)
+        recent = tasks.find({'global_count':{'$exists':False},
+            '_completed':False}).sort('_id' , pymongo.DESCENDING).limit(10)
         for x in recent:
             print Task(**x)
     cleanup()
