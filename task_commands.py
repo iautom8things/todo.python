@@ -106,6 +106,7 @@ def destroy_connection ( ):
     """Kills the subprocess that runs the MongoDB server."""
 
     global mongo_proc
+    time.sleep(constants.TENTH_SECOND)
     os.kill(mongo_proc.pid, signal.SIGINT)
 
 def cleanup ( ):
@@ -411,6 +412,7 @@ Examples:
     print 'Listing most recent tasks...'
     tasks = retrieve_collection()
     count = get_globalcount(tasks)
+    print count
     if not count > 0:
         print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
         help' to help get started!"""
