@@ -412,7 +412,6 @@ Examples:
     print 'Listing most recent tasks...'
     tasks = retrieve_collection()
     count = get_globalcount(tasks)
-    print count
     if not count > 0:
         print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
         help' to help get started!"""
