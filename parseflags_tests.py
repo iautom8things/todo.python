@@ -23,17 +23,17 @@
 #################################################
 
 import unittest
-from taskcomm import grab_priority, grab_keywords
+from task_commands import grab_priority, grab_keywords, grab_description
 
-class TestGrabKeywords(unittest.TestCase):
+class TestArgumentParsing(unittest.TestCase):
     def setUp(self):
         self.empty_str = ''
         # kflag w/ keywords, then pflag w/ priority
-        self.args_1 = ['-k','frank','hank', '-p', '500']
+        self.args_1 = ['this', 'is', 'a', 'test', '-k','frank','hank', '-p', '500']
         # pflag w/ priority followed by extra text that's ignored
-        self.args_2 = ['-p', '100', 'fred', 'ted']
+        self.args_2 = ['a really long one', '-p', '100', 'fred', 'ted']
          # pflag followed by kflag w/ no priority declared
-        self.args_3 = ['-p', '-k', 'foo', 'bar']
+        self.args_3 = ['is', 'long combined','-p', '-k', 'foo', 'bar']
         # Everything is ignored
         self.args_4 = ['-pk', 'no', 'way']
         # kflag by itself, will result in empty keywords
@@ -43,7 +43,7 @@ class TestGrabKeywords(unittest.TestCase):
         # pflag and large priority
         self.args_7 = ['-p', '2352340']
         # kflag with large single keyword
-        self.args_8 = ['-k', 'this is a long keyword']
+        self.args_8 = ['-k', 'this is 1 keyword']
         # kflag w/out keywords followed by pflag and priority
         self.args_9 = ['-k', '-p', '300']
         # pflag, priority then kflag and keywords]
@@ -79,5 +79,19 @@ class TestGrabKeywords(unittest.TestCase):
         self.assertEqual(grab_priority(self.args_10),       10)
         self.assertEqual(grab_priority(self.empty_args),    0)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestGrabKeywords)
+    def test_description_parse(self):
+        self.assertEqual(grab_description(self.args_1),        'this is a test')
+        self.assertEqual(grab_description(self.args_2),        'a really long one')
+        self.assertEqual(grab_description(self.args_3),        'is long combined')
+        self.assertEqual(grab_description(self.args_4),        '-pk no way')
+        self.assertEqual(grab_description(self.args_5),        '')
+        self.assertEqual(grab_description(self.args_6),        '')
+        self.assertEqual(grab_description(self.args_7),        '')
+        self.assertEqual(grab_description(self.args_8),        '')
+        self.assertEqual(grab_description(self.args_9),        '')
+        self.assertEqual(grab_description(self.args_10),       '')
+        self.assertEqual(grab_description(self.empty_args),    '')
+
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestArgumentParsing)
 unittest.TextTestRunner(verbosity=2).run(suite)

@@ -60,17 +60,26 @@ kflag = "-k"            # Keywords
 pflag = "-p"            # Priority
 
 
-#########################
-#   Helper Functions    #
-#########################
+###############################
+#   Global Count Functions    #
+###############################
 
-def get_globalcount ( _collection ):
-        """Returns the total number of created tasks.  This is used as a
-        unique identifier for tasks."""
+def get_globalcount ( ):
+    """Returns the total number of created tasks.  This is used as a
+    unique identifier for tasks."""
 
-        doc = _collection.find({'global_count':{'$exists':True}}).next()
-        return int(doc['global_count'])
+    return db_connection.todo.count.count()
 
+def inc_globalcount ( ):
+    """This adds an empty document to the count collection so we can keep a
+    global count of tasks.  This is needed since we can delete tasks
+    permenantly."""
+
+    db_connection.todo.count.insert({})
+
+#####################################
+#   Database Collection Functions   #
+#####################################
 
 def retrieve_collection ( ):
     """Create a connection to the MongoDB server, if it is already running,
@@ -96,10 +105,6 @@ def retrieve_collection ( ):
             sys.exit(constants.SERVER_UNAVAILABLE)
     db_connection = c
     tasks = db_connection.todo.tasks
-
-    if not tasks.find({'global_count' : {'$exists':True}}).count() > 0:
-        tasks.insert({'global_count':0})
-
     return tasks
 
 def destroy_connection ( ):
@@ -115,6 +120,28 @@ def cleanup ( ):
 
     if created:
         destroy_connection()
+
+#########################
+#   Parsing Functions   #
+#########################
+
+def grab_description ( _args ):
+    """Helper function to grab the description of the task"""
+
+    if kflag in _args:
+        k_index = _args.index(kflag)
+    else:
+        k_index = float('inf') # Infinity
+    if pflag in _args:
+        p_index = _args.index(pflag)
+    else:
+        p_index = float('inf') # Infinity
+    first_flag = min(k_index, p_index)
+    try:
+        first_flag = int(first_flag)
+    except:
+        first_flag = None
+    return " ".join(_args[:first_flag])
 
 def grab_keywords ( _args ):
     """Helper function to look for any keywords supplied by the user,
@@ -201,20 +228,18 @@ Examples:
             Priority: 0     Keywords: []
 """
 
-    if not _args or _args[0] is kflag or _args[0] is pflag:
+    description = grab_description(_args)
+    if not description:
         print 'No description provided!'
     else:
-        description = _args[0]
-        _args = _args[1:]
         keywords = grab_keywords(_args)
         priority = grab_priority(_args)
 
         tasks = retrieve_collection()
-        task_id = get_globalcount(tasks) + 1
+        task_id = get_globalcount() + 1
         task = Task(task_id, description, priority, keywords)
         tasks.insert(task.__dict__)
-        tasks.update({'global_count':{'$exists':True}},
-                {'global_count':task_id})
+        inc_globalcount()
         print 'Added:'
         print task
     cleanup()
@@ -366,8 +391,11 @@ Examples:
     ID: 1   Done: True   Task: call fred later
             Priority: 10    Keywords: ['foo', 'bar', 'baz']
 """
-    print 'looking for %s' % _args
+    print 'looking for %s ...' % _args,
     tasks = retrieve_collection()
+    found = tasks.find({'_keywords':{'$in':_args}})
+    count = found.count()
+    print "%s found" % count
     for x in tasks.find({'_keywords' :{'$in' : _args}}):
         print Task(**x)
     cleanup()
@@ -409,17 +437,23 @@ Examples:
     ID: 1   Done: False   Task: call fred later
             Priority: 10    Keywords: ['foo', 'bar', 'baz']
 """
-    print 'Listing most recent tasks...'
+    print 'Listing most recent tasks...',
     tasks = retrieve_collection()
-    count = get_globalcount(tasks)
-    if not count > 0:
+    global_count = get_globalcount()
+    if not global_count:
+        print "None found!"
         print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
         help' to help get started!"""
     else:
-        recent = tasks.find({'global_count':{'$exists':False},
-            '_completed':False}).sort('_id' , pymongo.DESCENDING).limit(10)
-        for x in recent:
-            print Task(**x)
+        recent = tasks.find({'_completed':False}).sort('_id' , pymongo.DESCENDING).limit(10)
+        count = recent.count()
+        if not count:
+            print "None found!"
+            print "Unable to find unfinished tasks.  Add a new task to fix this!"
+        else:
+            print "%s found!" % count
+            for x in recent:
+                print Task(**x)
     cleanup()
 
 def help ( _args = [] ):
