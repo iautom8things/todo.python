@@ -275,9 +275,9 @@ Examples:
     try:
         taskid = int(_args[0])
         tasks = retrieve_collection()
-        task = Task(**tasks.find({'_id' : taskid }).next())
+        task = Task(**tasks.find({'id' : taskid }).next())
         print 'Deleting...\n%s' % task
-        tasks.remove({ '_id' : taskid })
+        tasks.remove({ 'id' : taskid })
     except ValueError:
         print "Failed."
         print "'delete' command requires an integer-based task ID."
@@ -314,8 +314,8 @@ Examples:
     try:
         taskid = int(_args[0])
         tasks = retrieve_collection()
-        tasks.update({'_id':taskid},{'$set':{'_completed':True}})
-        task = Task(**tasks.find({'_id' : taskid }).next())
+        tasks.update({'id':taskid},{'$set':{'_completed':True}})
+        task = Task(**tasks.find({'id' : taskid }).next())
         print 'Completing...\n%s' % task
     except:
         print "Failed."
@@ -351,7 +351,7 @@ Examples:
 
     tasks = retrieve_collection()
     print 'Finished Tasks...'
-    for x in tasks.find({ '_completed' : True }):
+    for x in tasks.find({ 'completed' : True }):
         print Task(**x)
     cleanup()
 
@@ -393,10 +393,10 @@ Examples:
 """
     print 'looking for %s ...' % _args,
     tasks = retrieve_collection()
-    found = tasks.find({'_keywords':{'$in':_args}})
+    found = tasks.find({'keywords':{'$in':_args}})
     count = found.count()
     print "%s found" % count
-    for x in tasks.find({'_keywords' :{'$in' : _args}}):
+    for x in tasks.find({'keywords' :{'$in' : _args}}):
         print Task(**x)
     cleanup()
 
@@ -445,7 +445,7 @@ Examples:
         print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
         help' to help get started!"""
     else:
-        recent = tasks.find({'_completed':False}).sort('_id' , pymongo.DESCENDING).limit(10)
+        recent = tasks.find({'completed':False}).sort('id' , pymongo.DESCENDING).limit(10)
         count = recent.count()
         if not count:
             print "None found!"

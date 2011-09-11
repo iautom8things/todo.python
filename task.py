@@ -27,51 +27,51 @@ class Task ( object ):
 A Task object used for validating the documents stored in MongoDB and for
 defining a unified way to print a Task to screen.
 """
-    def __init__ ( self, _id, _description, _priority,
-            _keywords, _completed = False ):
+    def __init__ ( self, id, description, priority,
+            keywords, completed = False, _id = None ):
         """ The Constructor.  Since Tasks will be created from documents
         stored in MongoDB, we must ensure the parameter values are casted as
         the correct data type since MongoDB uses unicode strings."""
 
-        self._id = int(_id)
-        self._description = str(_description)
-        self._priority = int(_priority)
-        self._keywords = map(str, _keywords)
-        self._completed = bool(_completed)
+        self.id = int(id)
+        self.description = str(description)
+        self.priority = int(priority)
+        self.keywords = map(str, keywords)
+        self.completed = bool(completed)
 
     @property
-    def id ( self ):
+    def _id ( self ):
         """Returns the Identifcation Number of the Task."""
-        return self._id
+        return self.id
 
     @property
-    def description ( self ):
+    def _description ( self ):
         """Returns the description of the Task."""
-        return self._description
+        return self.description
 
     @property
-    def priority ( self ):
+    def _priority ( self ):
         """Returns the priority level of the Task."""
-        return self._priority
+        return self.priority
 
     @property
-    def keywords ( self ):
+    def _keywords ( self ):
         """Returns the keywords associated with the Task."""
-        return self._keywords
+        return self.keywords
 
     @property
-    def completed ( self ):
+    def _completed ( self ):
         """Returns whether the Task as been completed."""
-        return self._completed
+        return self.completed
 
-    @completed.setter
-    def completed ( self, value ):
+    @_completed.setter
+    def _completed ( self, value ):
         """Sets the completed property with the value supplied."""
         if type(value) == type(True):
-            self._completed = value
+            self.completed = value
 
     def __str__ ( self ):
         """The String representation of a Task."""
         return """ID: %s\tDone:%s\tTask: %s
-        Priority: %s\tKeywords: %s""" % (self._id, self._completed,
-                self._description, self._priority, self._keywords)
+        Priority: %s\tKeywords: %s""" % (self.id, self.completed,
+                self.description, self.priority, self.keywords)
