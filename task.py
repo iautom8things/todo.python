@@ -27,22 +27,22 @@ class Task ( object ):
 A Task object used for validating the documents stored in MongoDB and for
 defining a unified way to print a Task to screen.
 """
-    def __init__ ( self, id, description, priority,
+    def __init__ ( self, identifier, description, priority,
             keywords, completed = False, _id = None ):
         """ The Constructor.  Since Tasks will be created from documents
         stored in MongoDB, we must ensure the parameter values are casted as
         the correct data type since MongoDB uses unicode strings."""
 
-        self.id = int(id)
+        self.identifier = int(identifier)
         self.description = str(description)
         self.priority = int(priority)
         self.keywords = map(str, keywords)
         self.completed = bool(completed)
 
     @property
-    def _id ( self ):
+    def _identifier ( self ):
         """Returns the Identifcation Number of the Task."""
-        return self.id
+        return self.identifier
 
     @property
     def _description ( self ):
@@ -73,5 +73,5 @@ defining a unified way to print a Task to screen.
     def __str__ ( self ):
         """The String representation of a Task."""
         return """ID: %s\tDone:%s\tTask: %s
-        Priority: %s\tKeywords: %s""" % (self.id, self.completed,
+        Priority: %s\tKeywords: %s""" % (self.identifier, self.completed,
                 self.description, self.priority, self.keywords)
