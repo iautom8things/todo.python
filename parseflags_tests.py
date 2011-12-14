@@ -29,7 +29,7 @@ class TestArgumentParsing(unittest.TestCase):
     def setUp(self):
         self.empty_str = ''
         # kflag w/ keywords, then pflag w/ priority
-        self.args_1 = ['this', 'is', 'a', 'test', '-k','frank','hank', '-p', '500']
+        self.args_1 = ['this', 'is', 'a', 'test', '-k','frank', '-p', '500']
         # pflag w/ priority followed by extra text that's ignored
         self.args_2 = ['a really long one', '-p', '100', 'fred', 'ted']
          # pflag followed by kflag w/ no priority declared
@@ -54,7 +54,7 @@ class TestArgumentParsing(unittest.TestCase):
         self.assertEqual(grab_keywords(self.empty_str), self.empty_args)
 
     def test_keywords_flag(self):
-        self.assertEqual(grab_keywords(self.args_1),     ['frank','hank'])
+        self.assertEqual(grab_keywords(self.args_1),     ['frank'])
         self.assertEqual(grab_keywords(self.args_2),     self.empty_args)
         self.assertEqual(grab_keywords(self.args_3),     ['foo', 'bar'])
         self.assertEqual(grab_keywords(self.args_4),     self.empty_args)
@@ -80,9 +80,9 @@ class TestArgumentParsing(unittest.TestCase):
         self.assertEqual(grab_priority(self.empty_args),    0)
 
     def test_description_parse(self):
-        self.assertEqual(grab_description(self.args_1),        'this is a test')
-        self.assertEqual(grab_description(self.args_2),        'a really long one')
-        self.assertEqual(grab_description(self.args_3),        'is long combined')
+        self.assertEqual(grab_description(self.args_1), 'this is a test')
+        self.assertEqual(grab_description(self.args_2), 'a really long one')
+        self.assertEqual(grab_description(self.args_3), 'is long combined')
         self.assertEqual(grab_description(self.args_4),        '-pk no way')
         self.assertEqual(grab_description(self.args_5),        '')
         self.assertEqual(grab_description(self.args_6),        '')
