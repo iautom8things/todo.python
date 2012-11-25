@@ -5,9 +5,7 @@
 #   A simple command-line Todo List Manager     #
 #                                               #
 #   Dependancies:                               #
-#       MongoDB (Developed on Version 1.8.2)    #
 #       Python  (Developed on Version 2.7.2)    #
-#       PyMongo (Developed on Version 1.11)     #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
