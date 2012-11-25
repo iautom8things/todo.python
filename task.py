@@ -5,9 +5,7 @@
 #   A simple command-line Todo List Manager     #
 #                                               #
 #   Dependancies:                               #
-#       MongoDB (Developed on Version 1.8.2)    #
 #       Python  (Developed on Version 2.7.2)    #
-#       PyMongo (Developed on Version 1.11)     #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -28,7 +26,7 @@ A Task object used for validating the documents stored in MongoDB and for
 defining a unified way to print a Task to screen.
 """
     def __init__ ( self, identifier, description, priority,
-            keywords, completed = False, _id = None ):
+            keywords, completed = False ):
         """ The Constructor.  Since Tasks will be created from documents
         stored in MongoDB, we must ensure the parameter values are casted as
         the correct data type since MongoDB uses unicode strings."""

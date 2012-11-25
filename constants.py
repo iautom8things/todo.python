@@ -5,9 +5,7 @@
 #   A simple command-line Todo List Manager     #
 #                                               #
 #   Dependancies:                               #
-#       MongoDB (Developed on Version 1.8.2)    #
 #       Python  (Developed on Version 2.7.2)    #
-#       PyMongo (Developed on Version 1.11)     #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -22,13 +20,11 @@
 #                                               #
 #################################################
 
-##################
-#   Exit Codes   #
-##################
+import os
 
-MISSING_DEPENDANCY = 42
-SERVER_UNAVAILABLE = 73
-UNRECOGNIZED_COMMAND = 12
+USER_HOME = os.environ['HOME']
+TODO_HOME = os.path.join(USER_HOME, '.todo-python')
+DB_PATH = os.path.join(TODO_HOME, 'tasks.db')
 
 ############
 #   Time   #

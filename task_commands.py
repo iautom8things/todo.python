@@ -5,9 +5,7 @@
 #   A simple command-line Todo List Manager     #
 #                                               #
 #   Dependancies:                               #
-#       MongoDB (Developed on Version 1.8.2)    #
 #       Python  (Developed on Version 2.7.2)    #
-#       PyMongo (Developed on Version 1.11)     #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -22,104 +20,88 @@
 #                                               #
 #################################################
 
+import os
+import sys
+import sqlite3
+import constants
 from task import Task
-import subprocess, time, os, sys, signal, commands, constants
 
 
-#######################################
-#   Test that MongoDB is installed    #
-#######################################
+#############################################
+#   Test that TODO_HOME directory exists    #
+#############################################
 
-if not commands.getoutput('which mongod'):
-    print "Please install MongoDB!\nSee Their Website:\thttp://mongodb.org"
-    sys.exit(constants.MISSING_DEPENDANCY)
+if not os.path.exists(constants.TODO_HOME):
+    os.makedirs(constants.TODO_HOME)
+    try:
+        assert(os.path.isdir(constants.TODO_HOME))
+    except AssertionError:
+        print "We were unable to create our home directory (%s). " % constants.TODO_HOME,
+        print "Maybe a file exists with a similar name, or you ",
+        print "do not have the proper permissions."
+        sys.exit(1)
 
-#######################################
-#   Test that pymongo is installed    #
-#######################################
 
+createDB = not os.path.exists(constants.DB_PATH)
+db_connection = sqlite3.connect(constants.DB_PATH)
+db_cursor = db_connection.cursor()
 
-try:
-    import pymongo
-except ImportError, e:
-    print "Please install pymongo!"
-    print "See Their Website:\thttp://pypi.python.org/pypi/pymongo/2.0.1"
-    sys.exit(constants.MISSING_DEPENDANCY)
+if createDB:
+    db_cursor.execute("""CREATE TABLE tasks
+                            (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             description TEXT,
+                             priority INTEGER,
+                             completed INTEGER);""")
+    db_cursor.execute("""CREATE TABLE keywords
+                            (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             task_id INTEGER,
+                             keyword TEXT,
+                             FOREIGN KEY(task_id) REFERENCES tasks(id));""")
 
+def add_task_to_db ( description, priority ):
+    db_cursor.execute("""INSERT INTO tasks
+            (description,priority,completed) VALUES (?,?,?);""", (description,priority,False))
+    db_cursor.execute("SELECT last_insert_rowid();")
+    task_id = db_cursor.fetchone()[0]
+    return task_id
+
+def add_keyword_to_db ( task_id, keyword ):
+    db_cursor.execute("""INSERT INTO keywords (task_id,keyword) VALUES (?,?);""", (task_id,keyword))
+
+def get_task_by_id ( task_id ):
+    db_cursor.execute("SELECT * FROM tasks WHERE id=?;",(task_id,))
+    task_id, description, priority, completed = db_cursor.fetchone()
+    db_cursor.execute("SELECT keyword FROM keywords WHERE task_id=?;",(task_id,))
+    keywords = [ x[0] for x in db_cursor.fetchall() ]
+    return Task(task_id,description,priority,keywords,completed)
+
+def get_list_of_completed_tasks ( ):
+    db_cursor.execute("SELECT id FROM tasks WHERE completed=?;",(True,))
+    return [ x[0] for x in db_cursor.fetchall() ]
+
+def get_list_of_uncompleted_tasks ( ):
+    db_cursor.execute("SELECT id FROM tasks WHERE completed=?;",(False,))
+    return [ x[0] for x in db_cursor.fetchall() ]
+
+def delete_task_from_db ( task_id ):
+    db_cursor.execute("DELETE FROM tasks WHERE id=?;",(task_id,))
+    db_cursor.execute("DELETE FROM keywords WHERE task_id=?;",(task_id,))
+
+def get_tasks_with_keywords ( keywords ):
+    db_cursor.execute("SELECT task_id FROM keywords WHERE keyword IN (%s) GROUP BY task_id;" % ("?,"*len(keywords))[:-1],keywords)
+    return [ x[0] for x in db_cursor.fetchall() ]
+
+def close_db ( ):
+    db_connection.commit()
+    db_connection.close()
 
 #########################
 #   Global Variables    #
 #########################
 
 
-mongo_proc = None       # This will be the subprocess of the MongoDB server.
-created = None          # Boolean statement if the subprocess was created.
-db_connection = None    # The connection to the database.
-
 kflag = "-k"            # Keywords
 pflag = "-p"            # Priority
-
-
-###############################
-#   Global Count Functions    #
-###############################
-
-def get_globalcount ( ):
-    """Returns the total number of created tasks.  This is used as a
-    unique identifier for tasks."""
-
-    return db_connection.todo.count.count()
-
-def inc_globalcount ( ):
-    """This adds an empty document to the count collection so we can keep a
-    global count of tasks.  This is needed since we can delete tasks
-    permenantly."""
-
-    db_connection.todo.count.insert({})
-
-#####################################
-#   Database Collection Functions   #
-#####################################
-
-def retrieve_collection ( ):
-    """Create a connection to the MongoDB server, if it is already running,
-    OR if it is not running start our own MongoDB server in a subprocess.
-    Then return the collection of tasks (this is equvilent to a relational
-    database's table)."""
-
-    global created, mongo_proc, db_connection
-
-    try:
-        c = pymongo.Connection()
-    except:
-        with open('mongo.log', 'w') as f:   # Log the output of subprocess
-            mongo_proc = subprocess.Popen('mongod', shell=True, stdout=f)
-        created = True
-        # mongod needs some time to setup before we try to connect to it
-        time.sleep(constants.TENTH_SECOND)
-        try:
-            c = pymongo.Connection()
-        except:
-            print 'Unable to connect-to and start MongoDB.'
-            print 'Are you sure Mongo is installed?'
-            sys.exit(constants.SERVER_UNAVAILABLE)
-    db_connection = c
-    tasks = db_connection.todo.tasks
-    return tasks
-
-def destroy_connection ( ):
-    """Kills the subprocess that runs the MongoDB server."""
-
-    global mongo_proc
-    time.sleep(constants.TENTH_SECOND)
-    os.kill(mongo_proc.pid, signal.SIGINT)
-
-def cleanup ( ):
-    """A function to cleanup the MongoDB server subprocess, if it was
-    created by the script."""
-
-    if created:
-        destroy_connection()
 
 #########################
 #   Parsing Functions   #
@@ -132,15 +114,19 @@ def grab_description ( _args ):
         k_index = _args.index(kflag)
     else:
         k_index = float('inf') # Infinity
+
     if pflag in _args:
         p_index = _args.index(pflag)
     else:
         p_index = float('inf') # Infinity
+
     first_flag = min(k_index, p_index)
+
     try:
         first_flag = int(first_flag)
     except:
         first_flag = None
+
     return " ".join(_args[:first_flag])
 
 def grab_keywords ( _args ):
@@ -199,7 +185,7 @@ Description:
 Flags:
 
     -k  # Anything following this flag (up to another flag) is considered to
-        # be a keyword.  You can have multiple word keywords by surrounding
+        # be a keyword.  You can have multiple-word keywords by surrounding
         # them with quotation marks.
 
     -p  # A number that directly follows this flag will be the priority
@@ -235,14 +221,14 @@ Examples:
         keywords = grab_keywords(_args)
         priority = grab_priority(_args)
 
-        tasks = retrieve_collection()
-        task_id = get_globalcount() + 1
-        task = Task(task_id, description, priority, keywords)
-        tasks.insert(task.__dict__)
-        inc_globalcount()
+        task_id = add_task_to_db(description,priority)
+        for keyword in keywords:
+            add_keyword_to_db(task_id,keyword)
         print 'Added:'
-        print task
-    cleanup()
+        print Task(task_id, description, priority, keywords)
+
+    close_db()
+# end def add ( )
 
 def delete ( _args ):
     """
@@ -274,16 +260,16 @@ Examples:
 
     try:
         taskid = int(_args[0])
-        tasks = retrieve_collection()
-        task = Task(**tasks.find({'identifier' : taskid }).next())
+        task = get_task_by_id(taskid)
         print 'Deleting...\n%s' % task
-        tasks.remove({ 'identifier' : taskid })
+        delete_task_from_db(taskid)
     except ValueError:
         print "Failed."
         print "'delete' command requires an integer-based task ID."
         print "Please execute 'todo help' for further assistance."
-    finally:
-        cleanup()
+
+    close_db()
+# end def delete ( )
 
 def complete ( _args = [] ):
     """
@@ -313,19 +299,15 @@ Examples:
 """
     try:
         taskid = int(_args[0])
-    except:
-        taskid = None
-    if not taskid:
+        db_cursor.execute("UPDATE tasks SET completed=1 WHERE id=?;",(taskid,))
+        print 'Completing...\n%s' % get_task_by_id(taskid)
+    except ValueError:
         print "Failed."
         print"'complete' command requires an integer-based task ID."
         print "Please execute 'todo help' for further assistance."
-    else:
-        tasks = retrieve_collection()
-        tasks.update({'identifier':taskid},{'$set':{'completed':True}})
-        task = Task(**tasks.find({'identifier' : taskid }).next())
-        print 'Completing...\n%s' % task
 
-    cleanup()
+    close_db()
+# end def complete ( )
 
 def finished ( _args = [] ):
     """
@@ -352,11 +334,13 @@ Examples:
             Priority: 42    Keywords: ['nino', 'coding', 'python']
 """
 
-    tasks = retrieve_collection()
     print 'Finished Tasks...'
-    for x in tasks.find({ 'completed' : True }):
-        print Task(**x)
-    cleanup()
+    id_list = get_list_of_completed_tasks()
+    for task_id in id_list:
+        print get_task_by_id(task_id)
+
+    close_db()
+# end def update ()
 
 def find ( _args = [] ):
     """
@@ -395,13 +379,14 @@ Examples:
             Priority: 10    Keywords: ['foo', 'bar', 'baz']
 """
     print 'looking for %s ...' % _args,
-    tasks = retrieve_collection()
-    found = tasks.find({'keywords':{'$in':_args}})
-    count = found.count()
+    id_list = get_tasks_with_keywords(_args)
+    count = len(id_list)
     print "%s found" % count
-    for x in tasks.find({'keywords' :{'$in' : _args}}):
-        print Task(**x)
-    cleanup()
+    for x in id_list:
+        print get_task_by_id(x)
+
+    close_db()
+# end def find ( )
 
 def recent ( _args = [] ):
     """
@@ -437,27 +422,22 @@ Examples:
             Priority: 200   Keywords: ['dentist', 'apt']
     ID: 2   Done: False  Task: doctor apt
             Priority: 100   Keywords: ['apt', 'dr', 'foot']
-    ID: 1   Done: False   Task: call fred later
+ _tasks   ID: 1   Done: False   Task: call fred later
             Priority: 10    Keywords: ['foo', 'bar', 'baz']
 """
     print 'Listing most recent tasks...',
-    tasks = retrieve_collection()
-    global_count = get_globalcount()
-    if not global_count:
+    recent = get_list_of_uncompleted_tasks()
+    count = len(recent)
+    if not count:
         print "None found!"
-        print """Welcome to todo.python by Manuel Zubieta!  Execute 'todo
-        help' to help get started!"""
+        print "Unable to find unfinished tasks.  Add a new task to fix this!"
     else:
-        recent = tasks.find({'completed':False}).sort('identifier' , pymongo.DESCENDING).limit(10)
-        count = recent.count()
-        if not count:
-            print "None found!"
-            print "Unable to find unfinished tasks.  Add a new task to fix this!"
-        else:
-            print "%s found!" % count
-            for x in recent:
-                print Task(**x)
-    cleanup()
+        print "%s found!" % count
+        for x in recent:
+            print get_task_by_id(x)
+
+    close_db()
+# end def recent ( )
 
 def help ( _args = [] ):
     """

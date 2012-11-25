@@ -7,9 +7,7 @@
 #   A simple command-line Todo List Manager     #
 #                                               #
 #   Dependancies:                               #
-#       MongoDB (Developed on Version 1.8.2)    #
 #       Python  (Developed on Version 2.7.2)    #
-#       PyMongo (Developed on Version 1.11)     #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -24,7 +22,8 @@
 #                                               #
 #################################################
 
-import sys, constants
+import sys
+import constants
 from task_commands import commands
 
 #######################################
@@ -63,7 +62,7 @@ notifying the user of this mistake.
 
     print """%s is an unrecognized command.  Please execute 'todo help' for
     further help.""" % _command
-    sys.exit(constants.UNRECOGNIZED_COMMAND)
+    sys.exit(1)
 
 def read_command ( ):
     """
