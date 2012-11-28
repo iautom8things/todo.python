@@ -6,6 +6,7 @@
 #                                               #
 #   Dependancies:                               #
 #       Python  (Developed on Version 2.7.2)    #
+#       clint (Command Line INterface Tools)    #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #

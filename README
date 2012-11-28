@@ -6,6 +6,7 @@
 #                                               #
 #   Dependancies:                               #
 #       Python  (Developed on Version 2.7.2)    #
+#       clint (Command Line INterface Tools)    #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -22,13 +23,21 @@
 
 Installation -
 
+    Install clint:
+
+        $ pip install clint
+        or
+        $ easy_install clint
+
+        For more information visit: https://github.com/kennethreitz/clint
+
     In the terminal, navigate to the directory where 'todo' resides.
 
     Make 'todo' executable by executing, in the terminal:
 
         $ chmod +x todo
 
-    You can now execute the following, when your current working directory 
+    You can now execute the following, when your current working directory
     is the same as 'todo':
 
         $ python todo help

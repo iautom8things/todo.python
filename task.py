@@ -6,6 +6,7 @@
 #                                               #
 #   Dependancies:                               #
 #       Python  (Developed on Version 2.7.2)    #
+#       clint (Command Line INterface Tools)    #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -19,6 +20,8 @@
 #   Fall 2011 @ University of New Orleans       #
 #                                               #
 #################################################
+
+from clint.textui import colored
 
 class Task ( object ):
     """
@@ -70,6 +73,18 @@ defining a unified way to print a Task to screen.
 
     def __str__ ( self ):
         """The String representation of a Task."""
-        return """ID: %s\tDone:%s\tTask: %s
-        Priority: %s\tKeywords: %s""" % (self.identifier, self.completed,
-                self.description, self.priority, self.keywords)
+        color = colored.white
+        if self.priority > 100:
+            color = colored.red
+        elif self.priority > 50:
+            color = colored.yellow
+        else:
+            color = colored.green
+
+        retstring = colored.blue("Task:\n\t") + color(self.description)
+        retstring += colored.blue("\nID:") + " %s\t" % self.identifier
+        retstring += colored.blue("Completed: ") + "%s\t" % self.completed
+        retstring += colored.blue("Priority: ") + "%s\n" % self.priority
+        retstring += colored.blue("Keywords: ") + "%s" % self.keywords
+
+        return retstring

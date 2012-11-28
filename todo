@@ -8,6 +8,7 @@
 #                                               #
 #   Dependancies:                               #
 #       Python  (Developed on Version 2.7.2)    #
+#       clint (Command Line INterface Tools)    #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -25,6 +26,12 @@
 import sys
 import constants
 from task_commands import commands
+
+try:
+    from clint.textui import colored
+except ImportError:
+    print "todo.python depends on Clint: Python Command-line Application Tools for colored display"
+    sys.exit(1)
 
 #######################################
 #   Functions for Parsing Arguments   #

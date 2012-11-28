@@ -6,6 +6,7 @@
 #                                               #
 #   Dependancies:                               #
 #       Python  (Developed on Version 2.7.2)    #
+#       clint (Command Line INterface Tools)    #
 #                                               #
 # Developed by:                                 #
 #   Manuel Zubieta                              #
@@ -25,7 +26,7 @@ import sys
 import sqlite3
 import constants
 from task import Task
-
+from clint.textui import colored
 
 #############################################
 #   Test that TODO_HOME directory exists    #
@@ -224,7 +225,7 @@ Examples:
         task_id = add_task_to_db(description,priority)
         for keyword in keywords:
             add_keyword_to_db(task_id,keyword)
-        print 'Added:'
+        print colored.blue('Added:')
         print Task(task_id, description, priority, keywords)
 
     close_db()
@@ -381,7 +382,7 @@ Examples:
     print 'looking for %s ...' % _args,
     id_list = get_tasks_with_keywords(_args)
     count = len(id_list)
-    print "%s found" % count
+    print colored.blue("%s found" % count)
     for x in id_list:
         print get_task_by_id(x)
 
@@ -428,13 +429,11 @@ Examples:
     print 'Listing most recent tasks...',
     recent = get_list_of_uncompleted_tasks()
     count = len(recent)
+    print colored.blue("%s found!" % count)
     if not count:
-        print "None found!"
         print "Unable to find unfinished tasks.  Add a new task to fix this!"
-    else:
-        print "%s found!" % count
-        for x in recent:
-            print get_task_by_id(x)
+    for x in recent:
+        print get_task_by_id(x)
 
     close_db()
 # end def recent ( )
